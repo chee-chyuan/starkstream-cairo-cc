@@ -183,5 +183,20 @@
         "name": "cancel_stream",
         "outputs": [],
         "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "name": "recipient",
+                "type": "felt"
+            },
+            {
+                "name": "amount",
+                "type": "Uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [],
+        "type": "function"
     }
 ]

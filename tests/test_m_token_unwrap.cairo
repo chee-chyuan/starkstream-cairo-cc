@@ -189,7 +189,7 @@ func test_unwrap_update_stream{
         print(f"deposit: {ids.deposit.low}")
     %}
     local deposit : Uint256 = deposit
-    let (is_deposit_eq) = uint256_eq(Uint256(9,0), deposit)
+    let (is_deposit_eq) = uint256_eq(Uint256(1,0), deposit)
     assert is_deposit_eq = 1
     return ()
 end

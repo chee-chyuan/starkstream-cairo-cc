@@ -57,6 +57,29 @@ end
 ## TODO, general erc20 stuff
 # such as name, symbol....
 
+#
+# view
+#
+@view
+func get_underlying_token_addr{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr,
+    }() -> (res:felt):
+    let (token_addr) = underlying_token_addr.read()
+    return (res=token_addr)
+end
+
+@view
+func get_owner{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr,
+    }() -> (owner:felt):
+    let (res) = Ownable.owner()
+    return (owner=res)
+end
+
 
 @view 
 func balance_of{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(

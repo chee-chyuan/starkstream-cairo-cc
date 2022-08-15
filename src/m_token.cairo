@@ -414,3 +414,13 @@ func transfer{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}
 
     return ()
 end
+
+@external
+func transfer_from{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        sender : felt, recipient : felt, amount : Uint256
+    ): 
+
+    update_static_balance_from_internal(sender)
+    ERC20.transfer_from(sender, recipient, amount)
+    return ()
+end

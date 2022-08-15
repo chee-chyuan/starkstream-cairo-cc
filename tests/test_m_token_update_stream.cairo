@@ -159,11 +159,10 @@ func test_update_stream{
                                         )
     
 
-    let new_amount_o = outflow[0].amount_per_second
-    assert new_amount_o = amount_updated
+    assert outflow[0].amount_per_second= amount_updated
     %{
         print(f"outflow_len: {ids.outflow_len}")
-        print(f"new amount: {ids.new_amount_o}")
+
 
     %}
 
@@ -171,11 +170,11 @@ func test_update_stream{
                                             contract_address=contract_address,
                                             user=RECIPIENT_ADDRESS
                                         )
-    let new_amount_i = inflow[0].amount_per_second
-    assert new_amount_i = amount_updated
+
+    assert inflow[0].amount_per_second = amount_updated
     %{
         print(f"inflow_len: {ids.inflow_len}")
-        print(f"new amount i: {ids.new_amount_i}")
+
 
     %}
 

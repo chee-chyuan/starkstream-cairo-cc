@@ -95,23 +95,16 @@ func test_wrap_token{
         ids.contract_address = context.contract_address
         ids.erc20_address = context.erc20_address
         stop_prank_callable = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.contract_address)
+        stop_prank_callable = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.erc20_address)
     
     %}
-    # approve underlying token
+
     IERC20.approve(contract_address=erc20_address, spender=contract_address, amount=Uint256(100000,0))
-    IERC20.approve(contract_address=contract_address, spender=OWNER_ADDRESS, amount=Uint256(100000,0))
-    # IERC20.approve(contract_address=erc20_address, spender=OWNER_ADDRESS, amount=Uint256(100000,100000))
-    
+
+
     # transfer underlying to m_token contract
     Im_token.wrap(contract_address=contract_address,amount=Uint256(10,0)) 
-    # let (balance : Uint256) = IERC20.balanceOf(contract_address=erc20_address, account=contract_address)
-    # local balance : Uint256 = balance
 
-    # %{
-    #     print(f"owner's balance.low: {ids.balance.low}")
-    #     print(f"owner's balance.low: {ids.balance.high}")
-        
-    # %}
     %{
         stop_prank_callable()
     %}

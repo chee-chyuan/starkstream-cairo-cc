@@ -124,9 +124,9 @@ func approve{
         syscall_ptr : felt*,
         pedersen_ptr : HashBuiltin*,
         range_check_ptr
-    }(spender: felt, amount: Uint256) -> (success: felt):
+    }(spender: felt, amount: Uint256):
     ERC20.approve(spender, amount)
-    return (TRUE)
+    return ()
 end
 
 func get_real_time_balance_internal_inflow{

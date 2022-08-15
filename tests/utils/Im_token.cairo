@@ -27,6 +27,11 @@ namespace Im_token:
     ):
     end
 
+    func update_stream(
+        outflow_id : felt, amount_per_second : Uint256
+    ):
+    end
+
     func get_all_outflow_streams_by_user(
         user: felt
     ) -> (res_len: felt, res: outflow*):

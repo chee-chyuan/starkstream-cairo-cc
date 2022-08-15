@@ -54,15 +54,36 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     return ()
 end
 
-## TODO, general erc20 stuff
-# such as name, symbol....
 
+@view
+func name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (name:felt):
+    let (name) = ERC20.name()
+    return (name)
+end
+
+@view
+func symbol{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (symbol:felt):
+    let (symbol) = ERC20.symbol()
+    return (symbol)
+end
+
+@view
+func total_supply{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() ->(total_supply : Uint256):
+    let (total_supply) = ERC20.total_supply()
+    return (total_supply)
+end
+
+@view
+func decimals{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (decimals:felt):
+    let (decimals) = ERC20.decimals()
+    return (decimals)
+end
 
 @view 
 func balance_of{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     account: felt
 ) -> (balance: Uint256):
-    # static balance + dynamic balance
+    # static balance + dynamic balanc
     alloc_locals
     let (balance : Uint256) = ERC20.balance_of(account)
     local balance : Uint256 = balance

@@ -207,6 +207,17 @@
     {
         "inputs": [
             {
+                "name": "amount",
+                "type": "Uint256"
+            }
+        ],
+        "name": "unwrap",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "recipient",
                 "type": "felt"
             },

@@ -153,6 +153,31 @@ func wrap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
 end
 
 @external
+func unwrap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    amount: Uint256
+):
+    alloc_locals
+    let (caller) = get_caller_address()
+    local caller = caller
+
+    let (this_contract) = get_contract_address()
+    let (token_addr) = underlying_token_addr.read()
+
+    update_static_balance_from_internal(caller)
+
+    ERC20._burn(caller, amount)
+
+    let (transfer_res) = IERC20.transfer(
+        contract_address=token_addr, recipient=caller, amount=amount
+    )
+    with_attr error_message("Unwrapping failed."):
+        assert transfer_res = 1
+    end
+
+    return ()
+end
+
+@external
 func start_stream{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     recipient : felt, amount_per_second : Uint256, deposit_amount: Uint256
 ):
@@ -191,7 +216,6 @@ func update_stream{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
 ):
     alloc_locals
     let (caller) = get_caller_address()
-    let (timestamp_now) = get_block_timestamp()
 
     let (outflow_stream) = stream_out_info_by_addr.read(caller, outflow_id)
 
@@ -201,9 +225,6 @@ func update_stream{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     # get outflow after static balance update (deposit has changed)
     let (outflow_stream) = stream_out_info_by_addr.read(caller, outflow_id)
     local outflow_stream : outflow = outflow_stream
-
-    # set recipient update timestamp
-    user_last_updated_timestamp.write(outflow_stream.to, timestamp_now)
 
     # # find inflow and outflow
     # update amount_per_second
@@ -226,6 +247,10 @@ func update_static_balance_from_internal{syscall_ptr : felt*, pedersen_ptr : Has
 ):
     let (recipient_len) = stream_in_len_by_addr.read(recipient)
     update_static_balance_from_internal_loop(recipient, recipient_len)
+
+    # set recipient update timestamp
+    let (timestamp_now) = get_block_timestamp()
+    user_last_updated_timestamp.write(recipient, timestamp_now)
 
     return ()
 end

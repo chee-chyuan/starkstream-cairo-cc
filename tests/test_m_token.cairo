@@ -97,8 +97,8 @@ func test_wrap_token{
         stop_prank_callable = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.erc20_address)
     
     %}
-    # approve
-    IERC20.approve(contract_address=erc20_address, spender=contract_address, amount=Uint256(100000,100000))
+    # approve underlying token
+    IERC20.approve(contract_address=erc20_address, spender=ids.OWNER_ADDRESS, amount=Uint256(100000,100000))
     # IERC20.approve(contract_address=erc20_address, spender=OWNER_ADDRESS, amount=Uint256(100000,100000))
     
     # transfer underlying to m_token contract

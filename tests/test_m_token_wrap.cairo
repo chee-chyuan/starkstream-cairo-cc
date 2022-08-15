@@ -134,10 +134,3 @@ func test_wrap_token{
     return()
 end
 
-# @external
-# func test_after_wrap_token{
-#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-# }():
-
-    
-# end

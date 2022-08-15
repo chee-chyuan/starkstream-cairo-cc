@@ -82,7 +82,7 @@ end
 func test_unwrap{
     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
 }():
-
+    alloc_locals
     wrap_token()
 
     tempvar erc20_address
@@ -92,6 +92,8 @@ func test_unwrap{
         ids.erc20_address = context.erc20_address
         stop_prank_callable = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.contract_address)
     %}
+    local contract_address = contract_address
+    local erc20_address = erc20_address
 
     let (erc20_balance_before) = IERC20.balanceOf(contract_address=erc20_address, account=OWNER_ADDRESS)
     let (balance_before) = Im_token.balance_of(contract_address=contract_address, account=OWNER_ADDRESS)
@@ -102,16 +104,22 @@ func test_unwrap{
     %}
 
     let amount = Uint256(1,0)
-    Im_token.unwrap(contract_address=contract_address, amount=amount)
+    Im_token.unwrap(contract_address=contract_address, amount=Uint256(1,0))
 
     let (erc20_balance_after) = IERC20.balanceOf(contract_address=erc20_address, account=OWNER_ADDRESS)
     let (balance_after) = Im_token.balance_of(contract_address=contract_address, account=OWNER_ADDRESS)
-
+    local erc20_balance_after : Uint256 = erc20_balance_after
+    local balance_after : Uint256 = balance_after
     %{
         print(f"erc20_balance_after.low: {ids.erc20_balance_after.low}")
         print(f"balance_after.low: {ids.balance_after.low}")
     %}
+    let (is_erc20_balance_eq) = uint256_eq(Uint256(999991,0), erc20_balance_after)
+    assert is_erc20_balance_eq = 1
 
+    let (is_balance_eq) = uint256_eq(Uint256(9,0), balance_after)
+    assert is_balance_eq = 1
+    
     %{
         stop_prank_callable()
     %}
@@ -122,7 +130,7 @@ end
 func test_unwrap_update_stream{
     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
 }():
-
+    alloc_locals
     wrap_token()
 
     tempvar erc20_address
@@ -180,6 +188,8 @@ func test_unwrap_update_stream{
     %{
         print(f"deposit: {ids.deposit.low}")
     %}
-
+    local deposit : Uint256 = deposit
+    let (is_deposit_eq) = uint256_eq(Uint256(1,0), deposit)
+    assert is_deposit_eq = 1
     return ()
 end

@@ -78,48 +78,8 @@ func wrap_token{
     return()
 end
 
-@external 
-func test_unwrap{
-    syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
-}():
-
-    wrap_token()
-
-    tempvar erc20_address
-    tempvar contract_address
-    %{
-        ids.contract_address = context.contract_address
-        ids.erc20_address = context.erc20_address
-        stop_prank_callable = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.contract_address)
-    %}
-
-    let (erc20_balance_before) = IERC20.balanceOf(contract_address=erc20_address, account=OWNER_ADDRESS)
-    let (balance_before) = Im_token.balance_of(contract_address=contract_address, account=OWNER_ADDRESS)
-
-    %{
-        print(f"erc20_balance_before.low: {ids.erc20_balance_before.low}")
-        print(f"balance_before.low: {ids.balance_before.low}")
-    %}
-
-    let amount = Uint256(1,0)
-    Im_token.unwrap(contract_address=contract_address, amount=amount)
-
-    let (erc20_balance_after) = IERC20.balanceOf(contract_address=erc20_address, account=OWNER_ADDRESS)
-    let (balance_after) = Im_token.balance_of(contract_address=contract_address, account=OWNER_ADDRESS)
-
-    %{
-        print(f"erc20_balance_after.low: {ids.erc20_balance_after.low}")
-        print(f"balance_after.low: {ids.balance_after.low}")
-    %}
-
-    %{
-        stop_prank_callable()
-    %}
-    return ()
-end
-
 @external
-func test_unwrap_update_stream{
+func test_balance_of{
     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
 }():
 
@@ -144,42 +104,14 @@ func test_unwrap_update_stream{
         stop_warp = warp(2, target_contract_address=ids.contract_address) 
     %}
 
-    let (erc20_balance_before) = IERC20.balanceOf(contract_address=erc20_address, account=RECIPIENT_ADDRESS)
-    let (balance_before) = Im_token.balance_of(contract_address=contract_address, account=RECIPIENT_ADDRESS)
-
-    %{
-        print(f"erc20_balance_before.low: {ids.erc20_balance_before.low}")
-        print(f"balance_before.low: {ids.balance_before.low}")
-    %}
-
-    let amount = Uint256(2,0)
-    Im_token.unwrap(contract_address=contract_address, amount=amount)
-
-    let (erc20_balance_after) = IERC20.balanceOf(contract_address=erc20_address, account=RECIPIENT_ADDRESS)
     let (balance_after) = Im_token.balance_of(contract_address=contract_address, account=RECIPIENT_ADDRESS)
 
     %{
-        print(f"erc20_balance_after.low: {ids.erc20_balance_after.low}")
         print(f"balance_after.low: {ids.balance_after.low}")
     %}
 
     %{
-        stop_prank_callable_recipient()
         stop_warp()
     %}
-
-    let (outflow_len, outflow) = Im_token.get_all_outflow_streams_by_user(
-                                            contract_address=contract_address,
-                                            user=OWNER_ADDRESS
-                                        )
-    
-
-    # assert outflow[0].deposit = RECIPIENT_ADDRESS
-    let deposit = outflow[0].deposit
-
-    %{
-        print(f"deposit: {ids.deposit.low}")
-    %}
-
     return ()
 end

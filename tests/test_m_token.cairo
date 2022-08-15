@@ -19,7 +19,7 @@ func __setup__():
         [   1111, # name
             1111, # symbol 
             18,   # decimal 
-            1000000,1000000, # initial supply
+            1000000,0, # initial supply
             ids.OWNER_ADDRESS, # recipient
             ids.OWNER_ADDRESS, # owner
         ]
@@ -75,10 +75,10 @@ func test_wallet_balance_minted{
     local balance : Uint256 = balance
     %{
         print(f"owner's balance.low: {ids.balance.low}")
-        print(f"owner's balance.low: {ids.balance.high}")
+        print(f"owner's balance.high: {ids.balance.high}")
         
     %}
-    let (is_balance_eq) = uint256_eq(Uint256(1000000,1000000), balance)
+    let (is_balance_eq) = uint256_eq(Uint256(1000000,0), balance)
     assert is_balance_eq = 1
     return ()
 end
@@ -95,18 +95,26 @@ func test_wrap_token{
         ids.contract_address = context.contract_address
         ids.erc20_address = context.erc20_address
         stop_prank_callable = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.contract_address)
-        stop_prank_callable = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.erc20_address)
+        stop_prank_callable2 = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.erc20_address)
     
     %}
 
-    IERC20.approve(contract_address=erc20_address, spender=contract_address, amount=Uint256(100000,0))
+    IERC20.approve(contract_address=erc20_address, spender=contract_address, amount=Uint256(100,0))
+    
+    let (remaining: Uint256) = IERC20.allowance(contract_address=erc20_address, owner=OWNER_ADDRESS, spender=contract_address)
+    local remaining : Uint256 = remaining
+    %{
+        print(f"owner's remaining.low: {ids.remaining.low}")
+        print(f"owner's remaining.high: {ids.remaining.high}")
+    %}
 
-
+    Im_token.approve(contract_address=contract_address, spender=OWNER_ADDRESS, amount=Uint256(100,0))
     # transfer underlying to m_token contract
     Im_token.wrap(contract_address=contract_address,amount=Uint256(10,0)) 
 
     %{
         stop_prank_callable()
+        stop_prank_callable2()
     %}
     return()
 end

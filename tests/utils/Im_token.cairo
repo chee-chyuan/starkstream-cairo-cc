@@ -15,6 +15,9 @@ namespace Im_token:
     func wrap(amount : Uint256):
     end
 
+    func unwrap(amount : Uint256):
+    end
+    
     func approve(spender: felt, amount: Uint256):
     end
 

@@ -54,12 +54,6 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     return ()
 end
 
-## TODO, general erc20 stuff
-# such as name, symbol....
-
-#
-# view
-#
 @view
 func get_underlying_token_addr{
         syscall_ptr : felt*,
@@ -80,12 +74,35 @@ func get_owner{
     return (owner=res)
 end
 
+@view
+func name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (name:felt):
+    let (name) = ERC20.name()
+    return (name)
+end
+
+@view
+func symbol{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (symbol:felt):
+    let (symbol) = ERC20.symbol()
+    return (symbol)
+end
+
+@view
+func total_supply{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() ->(total_supply : Uint256):
+    let (total_supply) = ERC20.total_supply()
+    return (total_supply)
+end
+
+@view
+func decimals{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (decimals:felt):
+    let (decimals) = ERC20.decimals()
+    return (decimals)
+end
 
 @view 
 func balance_of{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     account: felt
 ) -> (balance: Uint256):
-    # static balance + dynamic balance
+    # static balance + dynamic balanc
     alloc_locals
     let (balance : Uint256) = ERC20.balance_of(account)
     local balance : Uint256 = balance
@@ -100,6 +117,16 @@ func balance_of{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     let (final_balance, add_carry) = uint256_add(balance, inflow_total_balance)
     assert add_carry = 0
     return (balance=final_balance)
+end
+
+@external
+func approve{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(spender: felt, amount: Uint256):
+    ERC20.approve(spender, amount)
+    return ()
 end
 
 func get_real_time_balance_internal_inflow{
@@ -176,6 +203,31 @@ func wrap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
 end
 
 @external
+func unwrap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    amount: Uint256
+):
+    alloc_locals
+    let (caller) = get_caller_address()
+    local caller = caller
+
+    let (this_contract) = get_contract_address()
+    let (token_addr) = underlying_token_addr.read()
+
+    update_static_balance_from_internal(caller)
+
+    ERC20._burn(caller, amount)
+
+    let (transfer_res) = IERC20.transfer(
+        contract_address=token_addr, recipient=caller, amount=amount
+    )
+    with_attr error_message("Unwrapping failed."):
+        assert transfer_res = 1
+    end
+
+    return ()
+end
+
+@external
 func start_stream{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     recipient : felt, amount_per_second : Uint256, deposit_amount: Uint256
 ):
@@ -214,7 +266,6 @@ func update_stream{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
 ):
     alloc_locals
     let (caller) = get_caller_address()
-    let (timestamp_now) = get_block_timestamp()
 
     let (outflow_stream) = stream_out_info_by_addr.read(caller, outflow_id)
 
@@ -224,9 +275,6 @@ func update_stream{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     # get outflow after static balance update (deposit has changed)
     let (outflow_stream) = stream_out_info_by_addr.read(caller, outflow_id)
     local outflow_stream : outflow = outflow_stream
-
-    # set recipient update timestamp
-    user_last_updated_timestamp.write(outflow_stream.to, timestamp_now)
 
     # # find inflow and outflow
     # update amount_per_second
@@ -249,6 +297,10 @@ func update_static_balance_from_internal{syscall_ptr : felt*, pedersen_ptr : Has
 ):
     let (recipient_len) = stream_in_len_by_addr.read(recipient)
     update_static_balance_from_internal_loop(recipient, recipient_len)
+
+    # set recipient update timestamp
+    let (timestamp_now) = get_block_timestamp()
+    user_last_updated_timestamp.write(recipient, timestamp_now)
 
     return ()
 end

@@ -104,17 +104,28 @@ func test_wrap_token{
     ## this approval does not make sense ?! 
     IERC20.approve(contract_address=erc20_address, spender=OWNER_ADDRESS, amount=Uint256(100,0))
 
-    # transfer underlying to m_token contract
+    let (total_supply_before : Uint256) = Im_token.total_supply(contract_address=contract_address)
+    let (m_token_bal_in_wallet_before : Uint256) = Im_token.balance_of(contract_address=contract_address, account=OWNER_ADDRESS)
+    local total_supply_before : Uint256 = total_supply_before
+    local m_token_bal_in_wallet_before : Uint256 = m_token_bal_in_wallet_before
+    %{
+        print(f"[Before wrap]m_token total_supply_before.low: {ids.total_supply_before.low}")
+        print(f"[Before wrap]user's m_token_bal_in_wallet_before.low: {ids.m_token_bal_in_wallet_before.low}")
+        
+    %}
+    ##################################################################
+    #### WRAP section
+    ##################################################################
     Im_token.wrap(contract_address=contract_address,amount=Uint256(10,0)) 
 
     ##################################################################
-    #### check remaining underlying balance
+    #### check remaining underlying balance in user's wallet
     ##################################################################
     let (erc20_token_bal : Uint256) = IERC20.balanceOf(contract_address=erc20_address, account=OWNER_ADDRESS)
     local erc20_token_bal : Uint256 = erc20_token_bal
     %{
         print(f"[After wrap]owner's erc20_token_bal.low: {ids.erc20_token_bal.low}")
-        print(f"[After wrap]owner's erc20_token_bal.high: {ids.erc20_token_bal.high}")
+        # print(f"[After wrap]owner's erc20_token_bal.high: {ids.erc20_token_bal.high}")
         
     %}
     let (is_balance_eq) = uint256_eq(Uint256(999990,0), erc20_token_bal)
@@ -126,10 +137,27 @@ func test_wrap_token{
     local erc20_token_bal_in_m_token_contract : Uint256 = erc20_token_bal_in_m_token_contract
     %{
         print(f"[After wrap]m_token's erc20_token_bal.low: {ids.erc20_token_bal_in_m_token_contract.low}")
-        print(f"[After wrap]m_token's erc20_token_bal.high: {ids.erc20_token_bal_in_m_token_contract.high}")
+        # print(f"[After wrap]m_token's erc20_token_bal.high: {ids.erc20_token_bal_in_m_token_contract.high}")
         
     %}
     let (is_balance_eq) = uint256_eq(Uint256(10,0), erc20_token_bal_in_m_token_contract)
+    assert is_balance_eq = 1
+    ##################################################################
+    #### check remaining m_token token balance in user's wallet
+    ##################################################################
+    # something wrong 
+    # let (m_token_bal_in_wallet : Uint256) = IERC20.balanceOf(contract_address=contract_address, account=OWNER_ADDRESS)
+    let (total_supply_after : Uint256) = Im_token.total_supply(contract_address=contract_address)
+    let (m_token_bal_in_wallet : Uint256) = Im_token.balance_of(contract_address=contract_address, account=OWNER_ADDRESS)
+    local total_supply_after : Uint256 = total_supply_after
+    local m_token_bal_in_wallet : Uint256 = m_token_bal_in_wallet
+    %{
+        print(f"[After wrap]m_token total_supply_after.low: {ids.total_supply_after.low}")
+        print(f"[After wrap]user's m_token_bal_in_wallet.low: {ids.m_token_bal_in_wallet.low}")
+        # print(f"[After wrap]user's m_token_bal_in_wallet.high: {ids.m_token_bal_in_wallet.high}")
+        
+    %}
+    let (is_balance_eq) = uint256_eq(Uint256(10,0), m_token_bal_in_wallet)
     assert is_balance_eq = 1
     %{
         stop_prank_callable()

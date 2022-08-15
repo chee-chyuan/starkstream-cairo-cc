@@ -1,6 +1,7 @@
 %lang starknet
 
 from starkware.cairo.common.cairo_builtins import HashBuiltin
+from starkware.cairo.common.alloc import alloc
 from starkware.cairo.common.math import assert_lt
 from starkware.starknet.common.syscalls import get_block_timestamp, get_caller_address, get_contract_address
 from src.structs.m_token_struct import inflow, outflow
@@ -424,3 +425,57 @@ func transfer_from{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     ERC20.transfer_from(sender, recipient, amount)
     return ()
 end
+
+@view
+func get_all_outflow_streams_by_user{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    user: felt
+) -> (res_len: felt, res: outflow*):
+    let (outflow_len) = stream_out_len_by_addr.read(user)
+    let (outflows: outflow*) = alloc()
+    let (res_len, res) = get_all_outflow_streams_by_user_internal(user, outflow_len, 0, 0, outflows)
+
+    return (res_len, res)
+end
+
+func get_all_outflow_streams_by_user_internal{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    sender: felt, total_length: felt, current_index: felt, res_len: felt, res: outflow*
+) -> (res_len: felt, res: outflow*):
+    if total_length == 0:
+        return (res_len, res)
+    end
+
+    let (outflow_info) = stream_out_info_by_addr.read(sender, current_index)
+    assert res[current_index] = outflow_info
+
+    let (outflows_len, outflows) = get_all_outflow_streams_by_user_internal(sender, total_length-1, current_index+1, res_len+1, res)
+
+    return (outflows_len, outflows)
+end
+
+@view
+func get_all_inflow_streams_by_user{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    user: felt
+) -> (res_len: felt, res: inflow*):
+    let (inflow_len) = stream_in_len_by_addr.read(user)
+    let (inflows: inflow*) = alloc()
+
+    let (res_len, res) = get_all_inflow_streams_by_user_internal(user, inflow_len, 0, 0, inflows)
+
+    return (res_len, res)
+end
+
+func get_all_inflow_streams_by_user_internal{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    sender: felt, total_length: felt, current_index: felt, res_len: felt, res: inflow*
+) -> (res_len: felt, res: inflow*):
+    if total_length == 0:
+        return (res_len, res)
+    end
+
+    let (inflow_info) = stream_in_info_by_addr.read(sender, current_index)
+    assert res[current_index] = inflow_info
+
+    let (inflows_len, inflows) = get_all_inflow_streams_by_user_internal(sender, total_length-1, current_index+1, res_len+1, res)
+
+    return (inflows_len, inflows)
+end
+

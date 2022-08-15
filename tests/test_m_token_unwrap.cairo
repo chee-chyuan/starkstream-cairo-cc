@@ -168,5 +168,18 @@ func test_unwrap_update_stream{
         stop_warp()
     %}
 
+    let (outflow_len, outflow) = Im_token.get_all_outflow_streams_by_user(
+                                            contract_address=contract_address,
+                                            user=OWNER_ADDRESS
+                                        )
+    
+
+    # assert outflow[0].deposit = RECIPIENT_ADDRESS
+    let deposit = outflow[0].deposit
+
+    %{
+        print(f"deposit: {ids.deposit.low}")
+    %}
+
     return ()
 end

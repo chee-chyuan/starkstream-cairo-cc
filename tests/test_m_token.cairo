@@ -110,7 +110,6 @@ func test_wrap_token{
         print(f"owner's remaining.high: {ids.remaining.high}")
     %}
 
-    Im_token.approve(contract_address=contract_address, spender=OWNER_ADDRESS, amount=Uint256(100,0))
     # transfer underlying to m_token contract
     Im_token.wrap(contract_address=contract_address,amount=Uint256(10,0)) 
 

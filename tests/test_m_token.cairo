@@ -10,7 +10,8 @@ from tests.utils.Im_token import Im_token
 
 const OWNER_ADDRESS = 123456
 
-@view
+
+@external
 func __setup__():
     tempvar erc20_address
     %{
@@ -26,7 +27,6 @@ func __setup__():
         ).contract_address
         ids.erc20_address = context.erc20_address
 
-        context.OWNER_ADDRESS = ids.OWNER_ADDRESS
         context.contract_address = deploy_contract(
            "./src/m_token.cairo",
            [
@@ -41,7 +41,7 @@ func __setup__():
     return ()
 end
 
-@view
+@external
 func test_init_constructor_correctly{
     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
 }():
@@ -61,7 +61,7 @@ func test_init_constructor_correctly{
     return ()
 end
 
-@view
+@external
 func test_wallet_balance_minted{
     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
 }():
@@ -74,8 +74,8 @@ func test_wallet_balance_minted{
     let (balance : Uint256) = IERC20.balanceOf(contract_address=erc20_address, account=OWNER_ADDRESS)
     local balance : Uint256 = balance
     %{
-        print(f"owner's balance.low: {ids.balance.low}")
-        print(f"owner's balance.high: {ids.balance.high}")
+        print(f"[Freshly minted]owner's balance.low: {ids.balance.low}")
+        print(f"[Freshly minted]owner's balance.high: {ids.balance.high}")
         
     %}
     let (is_balance_eq) = uint256_eq(Uint256(1000000,0), balance)
@@ -84,7 +84,7 @@ func test_wallet_balance_minted{
 end
 
 
-@view
+@external
 func test_wrap_token{
     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
 }():
@@ -100,6 +100,8 @@ func test_wrap_token{
     %}
 
     IERC20.approve(contract_address=erc20_address, spender=contract_address, amount=Uint256(100,0))
+    ## this approval does not make sense ?! 
+    IERC20.approve(contract_address=erc20_address, spender=OWNER_ADDRESS, amount=Uint256(100,0))
     
     let (remaining: Uint256) = IERC20.allowance(contract_address=erc20_address, owner=OWNER_ADDRESS, spender=contract_address)
     local remaining : Uint256 = remaining
@@ -116,5 +118,26 @@ func test_wrap_token{
         stop_prank_callable()
         stop_prank_callable2()
     %}
+    ## after wrapping token
+    let (underlying_balance : Uint256) = IERC20.balanceOf(contract_address=erc20_address, account=OWNER_ADDRESS)
+    local underlying_balance : Uint256 = underlying_balance
+    %{
+        print(f"[After wrap]owner's underlying_balance.low: {ids.underlying_balance.low}")
+        print(f"[After wrap]owner's underlying_balance.high: {ids.underlying_balance.high}")
+        
+    %}
+    # check remaining underlying balance
+    let (is_balance_eq) = uint256_eq(Uint256(999990,0), underlying_balance)
+    assert is_balance_eq = 1
+    # check remaining m_token balance
+
     return()
 end
+
+# @external
+# func test_after_wrap_token{
+#     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
+# }():
+
+    
+# end

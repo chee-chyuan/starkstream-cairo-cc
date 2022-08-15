@@ -133,6 +133,25 @@ func get_streamed_in_amount{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ra
     return (res=final_streamed_amount)
 end
 
+@external 
+func wrap{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    amount : Uint256
+):
+    let (token_addr) = underlying_token_addr.read()
+    let (caller) = get_caller_address()
+    let (this_contract) = get_contract_address()
+
+    let (transfer_res) = IERC20.transferFrom(
+        contract_address=token_addr, sender=caller, recipient=this_contract, amount=amount
+    )
+    with_attr error_message("Wrapping failed, cannot transfer ERC20 to contract."):
+        assert transfer_res = 1
+    end
+
+    ERC20._mint(caller, amount)
+    return ()
+end
+
 @external
 func start_stream{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
     recipient : felt, amount_per_second : Uint256, deposit_amount: Uint256

@@ -196,6 +196,17 @@
     {
         "inputs": [
             {
+                "name": "amount",
+                "type": "Uint256"
+            }
+        ],
+        "name": "wrap",
+        "outputs": [],
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
                 "name": "recipient",
                 "type": "felt"
             },

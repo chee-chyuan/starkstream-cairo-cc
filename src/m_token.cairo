@@ -54,6 +54,25 @@ func constructor{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_p
     return ()
 end
 
+@view
+func get_underlying_token_addr{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr,
+    }() -> (res:felt):
+    let (token_addr) = underlying_token_addr.read()
+    return (res=token_addr)
+end
+
+@view
+func get_owner{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr,
+    }() -> (owner:felt):
+    let (res) = Ownable.owner()
+    return (owner=res)
+end
 
 @view
 func name{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}() -> (name:felt):
@@ -98,6 +117,16 @@ func balance_of{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_pt
     let (final_balance, add_carry) = uint256_add(balance, inflow_total_balance)
     assert add_carry = 0
     return (balance=final_balance)
+end
+
+@external
+func approve{
+        syscall_ptr : felt*,
+        pedersen_ptr : HashBuiltin*,
+        range_check_ptr
+    }(spender: felt, amount: Uint256) -> (success: felt):
+    ERC20.approve(spender, amount)
+    return (TRUE)
 end
 
 func get_real_time_balance_internal_inflow{

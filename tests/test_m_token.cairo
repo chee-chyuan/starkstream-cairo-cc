@@ -13,7 +13,6 @@ const OWNER_ADDRESS = 123456
 @view
 func __setup__():
     tempvar erc20_address
-    
     %{
         context.erc20_address = deploy_contract(
         "./src/ERC20MintableBurnable.cairo",
@@ -27,6 +26,7 @@ func __setup__():
         ).contract_address
         ids.erc20_address = context.erc20_address
 
+        context.OWNER_ADDRESS = ids.OWNER_ADDRESS
         context.contract_address = deploy_contract(
            "./src/m_token.cairo",
            [
@@ -94,11 +94,12 @@ func test_wrap_token{
     %{
         ids.contract_address = context.contract_address
         ids.erc20_address = context.erc20_address
-        stop_prank_callable = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.erc20_address)
+        stop_prank_callable = start_prank(ids.OWNER_ADDRESS, target_contract_address=ids.contract_address)
     
     %}
     # approve underlying token
-    IERC20.approve(contract_address=erc20_address, spender=ids.OWNER_ADDRESS, amount=Uint256(100000,100000))
+    IERC20.approve(contract_address=erc20_address, spender=contract_address, amount=Uint256(100000,0))
+    IERC20.approve(contract_address=contract_address, spender=OWNER_ADDRESS, amount=Uint256(100000,0))
     # IERC20.approve(contract_address=erc20_address, spender=OWNER_ADDRESS, amount=Uint256(100000,100000))
     
     # transfer underlying to m_token contract

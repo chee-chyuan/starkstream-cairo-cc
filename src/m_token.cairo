@@ -222,8 +222,9 @@ func update_static_balance_from_internal_loop{syscall_ptr : felt*, pedersen_ptr 
     local inflow_info: inflow = inflow_info
 
     let (streamed_amount) = get_streamed_in_amount(inflow_info)
+    let (this_contract) = get_contract_address()
 
-    ERC20.transfer(recipient, streamed_amount)
+    ERC20._transfer(this_contract, recipient, streamed_amount)
 
     let (remaining_deposit) = uint256_sub(inflow_info.deposit, streamed_amount)
 
@@ -277,7 +278,8 @@ func sender_remove_deposit{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, ran
     let (is_enough_deposit_to_remove) = uint256_le(to_remove_amount, outflow_info.deposit)
     assert is_enough_deposit_to_remove = 1
 
-    ERC20.transfer(caller, to_remove_amount)
+    let (this_contract) = get_contract_address()
+    ERC20._transfer(this_contract, caller, to_remove_amount)
     let (new_deposit) = uint256_sub(outflow_info.deposit, to_remove_amount)
 
 
@@ -347,7 +349,8 @@ func cancel_stream{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check
     let (outflow_info) = stream_out_info_by_addr.read(caller, outflow_id)
 
     # refund caller
-    ERC20.transfer(caller, outflow_info.deposit)
+    let (this_contract) = get_contract_address()
+    ERC20._transfer(this_contract, caller, outflow_info.deposit)
 
     let (inflow_len) = stream_in_len_by_addr.read(outflow_info.to)
 
@@ -396,6 +399,18 @@ func assert_valid_out_stream{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, r
 ):
     let (len) = stream_out_len_by_addr.read(sender)
     assert_lt(outflow_id, len)
+
+    return ()
+end
+
+@external
+func transfer{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+    recipient: felt, amount: Uint256
+):
+    let (caller) = get_caller_address()
+    update_static_balance_from_internal(caller)
+
+    ERC20.transfer(recipient, amount)
 
     return ()
 end

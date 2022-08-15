@@ -129,6 +129,15 @@ func approve{
     return ()
 end
 
+@view
+func allowance{syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr}(
+        owner : felt, spender : felt
+    ) -> (remaining : Uint256):
+
+    let (res) = ERC20.allowance(owner, spender)
+    return (res)
+end
+
 func get_real_time_balance_internal_inflow{
     syscall_ptr : felt*, pedersen_ptr : HashBuiltin*, range_check_ptr
 }(account : felt, stream_len : felt, accumulated_balance : Uint256) -> (res : Uint256):
